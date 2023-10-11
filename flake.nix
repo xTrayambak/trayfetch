@@ -1,5 +1,5 @@
 {
-	description = "A lightweight and customizable fetching program written in Nim",
+	description = "A lightweight and customizable fetching program written in Nim";
 
 	inputs = {
 		nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
