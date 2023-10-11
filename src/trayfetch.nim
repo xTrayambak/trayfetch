@@ -3,7 +3,23 @@
 
   This code is licensed under the GNU General Public License v2 (not above!)
 ]#
-import std/[strutils, strformat, os, posix], config
+import std/[strutils, times, strformat, os, posix], config
+
+type Sysinfo* {.importc: "struct sysinfo", header: "<sys/sysinfo.h>", final, pure.} = object
+  uptime*: clong
+  loads*: array[0..3, culong]
+  totalram*: culong
+  freeram*: culong
+  sharedram*: culong
+  bufferram*: culong
+  totalswap*: culong
+  freeswap*: culong
+  procs*: cushort
+  totalhigh*: culong
+  freehigh*: culong
+  mem_unit*: cuint
+
+proc sysinfo*(info: ptr Sysinfo): cint {.importc, header: "<sys/sysinfo.h>".}
 
 const 
   C_RESET* = "\e[0m"
@@ -28,6 +44,9 @@ proc toString(str: array[0..64, char]): string {.inline.}  =
   result = newStringOfCap(len(str))
   for ch in str:
     add(result, ch)
+
+proc genUptime(uSeconds: clong): string {.inline.} =
+  $initDuration(seconds = cast[int](uSeconds))
   
 proc main {.inline.} =
   echo getTopBar()
@@ -63,6 +82,14 @@ proc main {.inline.} =
 
     discard utsName
     discard kernel
+
+  if ~"uptime":
+    var info = Sysinfo()
+    discard sysinfo(info.addr)
+
+    let uptime = genUptime(info.uptime)
+
+    echo fmt"│ {C_PURPLE}⏲ {C_RESET}uptime   │ {C_PURPLE}{uptime}{C_RESET}" 
 
   if ~"de/wm":
     let environment = getEnv("XDG_CURRENT_DESKTOP") & " (" & getEnv("XDG_SESSION_TYPE") & ")"
