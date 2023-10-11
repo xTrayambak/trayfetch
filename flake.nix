@@ -28,7 +28,6 @@
 			cp trayfetch $out/bin
                 	'';
             	};
-            };
         });
     };
 }
