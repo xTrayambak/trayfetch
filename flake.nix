@@ -33,6 +33,7 @@
 				# nim compiler + nimble
 				nim
 				nimble
+				;
             	};
         });
     };
