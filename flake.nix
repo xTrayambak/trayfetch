@@ -6,7 +6,7 @@
 	};
 
 	
-	outputs = { self, nixpkgs }:	
+	outputs = { self, lib, nixpkgs }:	
 	let
 	 eachSystems = lib.genAttrs (import systems);
          forAllSystems = function:
