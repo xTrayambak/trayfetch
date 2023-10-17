@@ -5,18 +5,10 @@
 		nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 	};
 
-	packages = eachSystem (system: {
-      		default = self.packages.${system}.hyprland;
-      		inherit
-        	(pkgsFor.${system})
-        	nim
-		nimble
-		;
-    	});
-
-	outputs = { self, nixpkgs }:
 	
+	outputs = { self, nixpkgs }:	
 	let
+	 eachSystems = lib.genAttrs (import systems);
          forAllSystems = function:
             nixpkgs.lib.genAttrs [
             "x86_64-linux"
@@ -36,6 +28,11 @@
                     	nimble release
 			cp trayfetch $out/bin
                 	'';
+			inherit
+				(pkgsFor.${system})
+				# nim compiler + nimble
+				nim
+				nimble
             	};
         });
     };
