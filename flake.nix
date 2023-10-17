@@ -8,7 +8,6 @@
 	
 	outputs = { self, lib, nixpkgs }:	
 	let
-	 eachSystems = lib.genAttrs (import systems);
          forAllSystems = function:
             nixpkgs.lib.genAttrs [
             "x86_64-linux"
