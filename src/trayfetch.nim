@@ -3,7 +3,7 @@
 
   This code is licensed under the GNU General Public License v2 (not above!)
 ]#
-import std/[strutils, times, strformat, os, posix], config
+import std/[strutils, parseopt, times, strformat, os, posix], config
 
 type Sysinfo* {.importc: "struct sysinfo", header: "<sys/sysinfo.h>", final, pure.} = object
   uptime*: clong
@@ -49,6 +49,35 @@ proc genUptime(uSeconds: clong): string {.inline.} =
   $initDuration(seconds = cast[int](uSeconds))
   
 proc main {.inline.} =
+  var 
+    opt = initOptParser(commandLineParams())
+    targets: seq[string]
+    options: seq[tuple[key, val: string]]
+    flags: seq[string]
+
+  while true:
+    opt.next()
+    case opt.kind
+    of cmdEnd: break
+    of cmdLongOption:
+      if opt.val.len < 1:
+        flags.add(
+          opt.key[2..opt.key.len-1]
+        )
+      else:
+        options.add(
+          (key: opt.key[2..opt.key.len-1], val: opt.val)
+        )
+    of cmdShortOption:
+      if opt.val.len < 1:
+        flags.add(opt.key[1..opt.key.len-1])
+      else:
+        options.add(
+          (key: opt.key[1..opt.key.len-1], val: opt.val)
+        )
+    of cmdArgument:
+      targets.add(opt.key)
+  
   echo getTopBar()
   
   if ~"user":
@@ -89,7 +118,7 @@ proc main {.inline.} =
 
     let uptime = genUptime(info.uptime)
 
-    echo fmt"│ {C_PURPLE}⏲ {C_RESET}uptime   │ {C_PURPLE}{uptime}{C_RESET}" 
+    echo fmt"│ {C_PURPLE}⏲ {C_RESET}uptime   │ {C_PURPLE}{uptime}{C_RESET}"
 
   if ~"de/wm":
     let environment = getEnv("XDG_CURRENT_DESKTOP") & " (" & getEnv("XDG_SESSION_TYPE") & ")"
@@ -109,7 +138,6 @@ proc main {.inline.} =
     echo fmt"│ {C_YELLOW} {C_RESET} colors  │ {C_RED}{UNICODE}{C_RESET}{C_YELLOW}{UNICODE}{C_RESET}{C_GREEN}{UNICODE}{C_RESET}{C_CYAN}{UNICODE}{C_RESET}"
 
   echo getBottomBar()
-
 
 when isMainModule:
   main()

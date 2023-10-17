@@ -5,6 +5,15 @@
 		nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 	};
 
+	packages = eachSystem (system: {
+      		default = self.packages.${system}.hyprland;
+      		inherit
+        	(pkgsFor.${system})
+        	nim
+		nimble
+		;
+    	});
+
 	outputs = { self, nixpkgs }:
 	
 	let
@@ -21,7 +30,7 @@
     	{
         	packages = forAllSystems (pkgs: {
             		default = pkgs.stdenv.mkDerivation {
-                	name = "maxfetch";
+                	name = "trayfetch";
                 	src = ./.;
                 	buildPhase = ''
                     	nimble release

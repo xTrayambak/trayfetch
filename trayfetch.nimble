@@ -19,6 +19,7 @@ nim c \
 --opt:speed \
 --opt:size \
 -d:release \
+-d:quick \
 -d:danger \
 --mm: none \
 --hints: off \
