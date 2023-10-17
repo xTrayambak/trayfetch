@@ -15,7 +15,10 @@
             "aarch64-linux"
             ] (system:
                 function (import nixpkgs {
-                inherit system;
+                inherit
+		nim
+		nimble
+		;
             }));
     	in
     	{
@@ -27,12 +30,6 @@
                     	nimble release
 			cp trayfetch $out/bin
                 	'';
-			inherit
-				(pkgsFor.${system})
-				# nim compiler + nimble
-				nim
-				nimble
-				;
             	};
         });
     };
