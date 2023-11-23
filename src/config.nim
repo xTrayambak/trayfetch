@@ -11,7 +11,7 @@ const
 # - tray, xoxo
 
 [config]
-enabled    = ["user", "host", "distro", "kernel", "de/wm", "shell", "colors", "uptime"]
+enabled    = ["user", "host", "distro", "kernel", "de/wm", "shell", "colors", "uptime", "memory"]
 top_bar    = "┌────────────┐"
 colors_bar = "├────────────┤"
 bottom_bar = "└────────────┘"

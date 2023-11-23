@@ -3,23 +3,7 @@
 
   This code is licensed under the GNU General Public License v2 (not above!)
 ]#
-import std/[strutils, parseopt, times, strformat, os, posix], config
-
-type Sysinfo* {.importc: "struct sysinfo", header: "<sys/sysinfo.h>", final, pure.} = object
-  uptime*: clong
-  loads*: array[0..3, culong]
-  totalram*: culong
-  freeram*: culong
-  sharedram*: culong
-  bufferram*: culong
-  totalswap*: culong
-  freeswap*: culong
-  procs*: cushort
-  totalhigh*: culong
-  freehigh*: culong
-  mem_unit*: cuint
-
-proc sysinfo*(info: ptr Sysinfo): cint {.importc, header: "<sys/sysinfo.h>".}
+import std/[strutils, parseopt, times, strformat, os, posix], config, utils
 
 const 
   C_RESET* = "\e[0m"
@@ -54,6 +38,7 @@ proc main {.inline.} =
     targets: seq[string]
     options: seq[tuple[key, val: string]]
     flags: seq[string]
+    info: Sysinfo
 
   while true:
     opt.next()
@@ -113,7 +98,6 @@ proc main {.inline.} =
     discard kernel
 
   if ~"uptime":
-    var info = Sysinfo()
     discard sysinfo(info.addr)
 
     let uptime = genUptime(info.uptime)
@@ -131,6 +115,16 @@ proc main {.inline.} =
     echo fmt"│ {C_PURPLE} {C_RESET}shell    │ {C_PURPLE}{shell[shell.len-1]}{C_RESET}"
 
     discard shell
+
+  if ~"memory":
+    if info.totalram == 0:
+      discard sysinfo(info.addr)
+
+    let
+      used = info.freeram.float32 / float32(1024 * 1024)
+      total = info.totalram.float32 / float32(1024 * 1024)
+
+    echo fmt"│{C_RED}  {C_RESET}memory   │ {C_RED}{used:02g}MB / {total:02g}MB{C_RESET}"
 
   echo getColorsBar()
 
