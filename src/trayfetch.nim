@@ -40,29 +40,6 @@ proc main {.inline.} =
     flags: seq[string]
     info: Sysinfo
 
-  while true:
-    opt.next()
-    case opt.kind
-    of cmdEnd: break
-    of cmdLongOption:
-      if opt.val.len < 1:
-        flags.add(
-          opt.key[2..opt.key.len-1]
-        )
-      else:
-        options.add(
-          (key: opt.key[2..opt.key.len-1], val: opt.val)
-        )
-    of cmdShortOption:
-      if opt.val.len < 1:
-        flags.add(opt.key[1..opt.key.len-1])
-      else:
-        options.add(
-          (key: opt.key[1..opt.key.len-1], val: opt.val)
-        )
-    of cmdArgument:
-      targets.add(opt.key)
-  
   echo getTopBar()
   
   if ~"user":

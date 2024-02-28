@@ -11,20 +11,9 @@ bin           = @["trayfetch"]
 # Dependencies
 
 requires "nim >= 1.6.14"
-requires "tomlserialization"
 
-task release, "Release build":
-  exec """
-nim c \
---opt:speed \
---opt:size \
--d:release \
--d:quick \
--d:danger \
---mm: none \
---hints: off \
---outdir: "." \
-src/trayfetch.nim
-  """
+when not defined(noConfig):
+  requires "tomlserialization"
 
+after build:
   exec "strip ./trayfetch"
