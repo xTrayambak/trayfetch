@@ -27,8 +27,8 @@
                 	name = "trayfetch";
                 	src = ./.;
                 	buildPhase = ''
-                    	nimble release
-			cp trayfetch $out/bin
+                    		nimble build -d:release
+				cp trayfetch $out/bin
                 	'';
             	};
         });
