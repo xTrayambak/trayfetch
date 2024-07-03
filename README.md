@@ -1,5 +1,5 @@
 # trayfetch - a lightweight and customizable fetching tool for POSIX-compliant systems
-That's it. Oh, and it's designed to be an almost 1:1 replacement for [maxfetch](https://github.com/jobcmax/maxfetch), apart from two stats, that I'll add later.
+That's it. Oh, and it's designed to be an almost 1:1 replacement for [maxfetch](https://github.com/jobcmax/maxfetch), apart from two stats that I'll add later.
 
 # Docs
 Trayfetch is really simple, you can store your configuration at `~/.config/trayfetch/config.toml`. As the filename implies, you can configure trayfetch using TOML.

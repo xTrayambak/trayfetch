@@ -40,60 +40,93 @@ proc main {.inline.} =
     flags: seq[string]
     info: Sysinfo
 
-  echo getTopBar()
+  stdout.write getTopBar() & '\n'
   
-  if ~"user":
+  when not defined(noConfig):
+    if ~"user":
+      let
+        uid = getuid()
+        username = getpwuid(uid).pwName
+
+      stdout.write fmt"│ {C_RED} {C_RESET}user     │ {C_RED}{username} ({uid}){C_RESET}" & '\n'
+
+    if ~"host":
+      let hostname = readFile("/etc/hostname").split('\n')[0]
+      stdout.write fmt"│ {C_YELLOW} {C_RESET}host     │ {C_YELLOW}{hostname}{C_RESET}" & '\n'
+
+    if ~"distro":
+      let distro = getDistro()
+      stdout.write fmt"│ {C_GREEN} {C_RESET}distro   │ {C_GREEN}{distro}{C_RESET}" & '\n'
+
+    if ~"kernel":
+      var utsName = Utsname()
+      discard uname(utsName)
+    
+      let kernel = toString(utsName.release)
+      stdout.write fmt"│ {C_CYAN}漣{C_RESET}kernel   │ {C_CYAN}{kernel}{C_RESET}" & '\n'
+
+    if ~"uptime":
+      discard sysinfo(info.addr)
+
+      let uptime = genUptime(info.uptime)
+
+      stdout.write fmt"│ {C_PURPLE}⏲ {C_RESET}uptime   │ {C_PURPLE}{uptime}{C_RESET}" & '\n'
+
+    if ~"de/wm":
+      let environment = getEnv("XDG_CURRENT_DESKTOP") & " (" & getEnv("XDG_SESSION_TYPE") & ")"
+      stdout.write fmt"│ {C_BLUE} {C_RESET}de/wm    │ {C_BLUE}{environment}{C_RESET}" & '\n'
+
+    if ~"shell":
+      let shell = getEnv("SHELL").split('/')
+      stdout.write fmt"│ {C_PURPLE} {C_RESET}shell    │ {C_PURPLE}{shell[shell.len-1]}{C_RESET}" & '\n'
+
+    if ~"memory":
+      if info.totalram == 0:
+        discard sysinfo(info.addr)
+
+      let
+        used = info.freeram.float32 / float32(1024 * 1024)
+        total = info.totalram.float32 / float32(1024 * 1024)
+
+      stdout.write fmt"│{C_RED}  {C_RESET}memory   │ {C_RED}{used:02g}MB / {total:02g}MB{C_RESET}" & '\n'
+
+    stdout.write getColorsBar() & '\n'
+
+    if ~"colors":
+      stdout.write fmt"│ {C_YELLOW} {C_RESET} colors  │ {C_RED}{UNICODE}{C_RESET}{C_YELLOW}{UNICODE}{C_RESET}{C_GREEN}{UNICODE}{C_RESET}{C_CYAN}{UNICODE}{C_RESET}" & '\n'
+
+    stdout.write getBottomBar() & '\n'
+  else:
     let
       uid = getuid()
       username = getpwuid(uid).pwName
 
-    echo fmt"│ {C_RED} {C_RESET}user     │ {C_RED}{username} ({uid}){C_RESET}"
+    stdout.write fmt"│ {C_RED} {C_RESET}user     │ {C_RED}{username} ({uid}){C_RESET}" & '\n'
 
-    discard uid
-    discard username
-
-  if ~"host":
     let hostname = readFile("/etc/hostname").split('\n')[0]
-    echo fmt"│ {C_YELLOW} {C_RESET}host     │ {C_YELLOW}{hostname}{C_RESET}"
+    stdout.write fmt"│ {C_YELLOW} {C_RESET}host     │ {C_YELLOW}{hostname}{C_RESET}" & '\n'
 
-    discard hostname
-
-  if ~"distro":
     let distro = getDistro()
-    echo fmt"│ {C_GREEN} {C_RESET}distro   │ {C_GREEN}{distro}{C_RESET}"
+    stdout.write fmt"│ {C_GREEN} {C_RESET}distro   │ {C_GREEN}{distro}{C_RESET}" & '\n'
 
-    discard distro
-
-  if ~"kernel":
     var utsName = Utsname()
     discard uname(utsName)
     
     let kernel = toString(utsName.release)
-    echo fmt"│ {C_CYAN}漣{C_RESET}kernel   │ {C_CYAN}{kernel}{C_RESET}"
+    stdout.write fmt"│ {C_CYAN}漣{C_RESET}kernel   │ {C_CYAN}{kernel}{C_RESET}" & '\n'
 
-    discard utsName
-    discard kernel
-
-  if ~"uptime":
     discard sysinfo(info.addr)
 
     let uptime = genUptime(info.uptime)
 
-    echo fmt"│ {C_PURPLE}⏲ {C_RESET}uptime   │ {C_PURPLE}{uptime}{C_RESET}"
+    stdout.write fmt"│ {C_PURPLE}⏲ {C_RESET}uptime   │ {C_PURPLE}{uptime}{C_RESET}" & '\n'
 
-  if ~"de/wm":
     let environment = getEnv("XDG_CURRENT_DESKTOP") & " (" & getEnv("XDG_SESSION_TYPE") & ")"
-    echo fmt"│ {C_BLUE} {C_RESET}de/wm    │ {C_BLUE}{environment}{C_RESET}"
+    stdout.write fmt"│ {C_BLUE} {C_RESET}de/wm    │ {C_BLUE}{environment}{C_RESET}" & '\n'
 
-    discard environment
-
-  if ~"shell":
     let shell = getEnv("SHELL").split('/')
-    echo fmt"│ {C_PURPLE} {C_RESET}shell    │ {C_PURPLE}{shell[shell.len-1]}{C_RESET}"
+    stdout.write fmt"│ {C_PURPLE} {C_RESET}shell    │ {C_PURPLE}{shell[shell.len-1]}{C_RESET}" & '\n'
 
-    discard shell
-
-  if ~"memory":
     if info.totalram == 0:
       discard sysinfo(info.addr)
 
@@ -101,14 +134,13 @@ proc main {.inline.} =
       used = info.freeram.float32 / float32(1024 * 1024)
       total = info.totalram.float32 / float32(1024 * 1024)
 
-    echo fmt"│{C_RED}  {C_RESET}memory   │ {C_RED}{used:02g}MB / {total:02g}MB{C_RESET}"
+    stdout.write fmt"│{C_RED}  {C_RESET}memory   │ {C_RED}{used:02g}MB / {total:02g}MB{C_RESET}" & '\n'
 
-  echo getColorsBar()
+    stdout.write getColorsBar() & '\n'
 
-  if ~"colors":
-    echo fmt"│ {C_YELLOW} {C_RESET} colors  │ {C_RED}{UNICODE}{C_RESET}{C_YELLOW}{UNICODE}{C_RESET}{C_GREEN}{UNICODE}{C_RESET}{C_CYAN}{UNICODE}{C_RESET}"
+    stdout.write fmt"│ {C_YELLOW} {C_RESET} colors  │ {C_RED}{UNICODE}{C_RESET}{C_YELLOW}{UNICODE}{C_RESET}{C_GREEN}{UNICODE}{C_RESET}{C_CYAN}{UNICODE}{C_RESET}" & '\n'
 
-  echo getBottomBar()
+    stdout.write getBottomBar() & '\n'
 
 when isMainModule:
   main()

@@ -1,36 +1,61 @@
 {
-	description = "A lightweight and customizable fetching program written in Nim";
+  description = "a lightweight and customizable system fetch for POSIX compliant systems";
 
-	inputs = {
-		nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-	};
+  inputs = {
+    nixpkgs.url = github:NixOS/nixpkgs/nixpkgs-unstable;
+  };
 
-	
-	outputs = { self, lib, nixpkgs }:	
-	let
-         forAllSystems = function:
-            nixpkgs.lib.genAttrs [
-            "x86_64-linux"
-            "x86_64-darwin"
-            "aarch64-linux"
-            ] (system:
-                function (import nixpkgs {
-                inherit
-		nim
-		nimble
-		;
-            }));
-    	in
-    	{
-        	packages = forAllSystems (pkgs: {
-            		default = pkgs.stdenv.mkDerivation {
-                	name = "trayfetch";
-                	src = ./.;
-                	buildPhase = ''
-                    		nimble build -d:release
-				cp trayfetch $out/bin
-                	'';
-            	};
+  outputs = { self, nixpkgs }:
+    with nixpkgs.lib;
+    let
+      forAllSystems = fn:
+        genAttrs platforms.unix (system:
+          fn (import nixpkgs {
+            inherit system;
+          })
+        );
+    in
+      {
+        packages = forAllSystems (pkgs: {
+          default = pkgs.buildNimPackage rec {
+            name = "trayfetch";
+            src = ./.;
+
+            lockFile = ./package.lock;
+
+            nativeBuildInputs = with pkgs; [
+              makeBinaryWrapper
+              nimble
+            ];
+
+            buildInputs = [];
+
+            LD_LIBRARY_PATH = with pkgs; lib.makeLibraryPath [
+              libGL
+            ];
+
+            wrapTrayfetch =
+              let
+                makeWrapperArgs = ''
+                  --prefix LD_LIBRARY_PATH : ${LD_LIBRARY_PATH}
+                '';
+              in
+              ''
+                wrapProgram "$(pwd)"/trayfetch ${makeWrapperArgs}
+              '';
+
+            postInstall = ''
+              cd $out/bin/
+              ${wrapTrayfetch}
+            '';
+
+            shellHook = ''
+              build-trayfetch () {
+                nimble build $@
+                ${wrapTrayfetch}
+              }
+            '';
+          };
         });
-    };
+      };
 }
