@@ -1,9 +1,12 @@
 when not defined(noConfig):
   import std/[strutils, os]
   import toml_serialization
-  const
+
+  let
     CONFIG_DIR = getConfigDir() & "trayfetch"
     CONFIG_FILE = CONFIG_DIR & "/config.toml"
+
+  const
     DEFAULT_CONFIG = """
 # Your default trayfetch config.
 # If you don't want a stat to show up, simply remove it from this list.
